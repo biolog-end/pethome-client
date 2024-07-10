@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-xdoirtsdldvzk
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'src/**'
+    - '.github/workflows/container-app-xdoirtsdldvzk-AutoDeployTrigger-b1937b94-7c05-424c-bfc8-e51b43aa3d5b.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPXDOIRTSDLDVZK_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPXDOIRTSDLDVZK_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPXDOIRTSDLDVZK_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/src 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPXDOIRTSDLDVZK_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPXDOIRTSDLDVZK_REGISTRY_PASSWORD }}
+          containerAppName: container-app-xdoirtsdldvzk
+          resourceGroup: pethomeclient9d85
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
